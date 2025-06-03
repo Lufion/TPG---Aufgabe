@@ -1,3 +1,159 @@
+{% assign title = metaobject.image_title %}
+{% assign description = metaobject.image_description | metafield_tag %}
+{% assign images = metaobject.images.value %}
+{% assign name_model = metaobject.model_reference.value.model_name %}
+
+<div class="details_container page-width">
+  <div class="details_content">
+    <h1 class="details_title">{{ title }} Look von {{ name_model }}</h1>
+    <div class="details_description">{{ description }}</div>
+
+    <div class="details_images_container">
+      <div class="details_image_wrapper">
+        <div class="details_image_wrapper">
+          <div class="image_arrow_left image_arrow">❮</div>
+          <div class="details_image_slider">
+            <div class="details_slider_track">
+              {% for image in images %}
+                <div class="details_slide">
+                  {{ image | image_url: width: 575, height: 882.217 | image_tag }}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="image_arrow_right image_arrow">❯</div>
+        </div>
+      </div>
+
+      <div class="details_image_thumbnails">
+        {% for image in images %}
+          <div
+            class="details_thumbnail_image"
+            data-index="{{ forloop.index0 }}"
+            {% if forloop.first %}
+              selected
+            {% endif %}
+          >
+            {{ image | image_url: width: 120, height: 184.117 | image_tag }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .details_container {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 4rem;
+  }
+
+  .details_content {
+    display: grid;
+  }
+
+  .details_title {
+    font-weight: 700;
+    font-size: 2.725rem;
+    line-height: 1.75rem;
+    margin: 2.125rem 0rem 1.25rem 0rem;
+  }
+
+  .details_description {
+    font-size: small;
+    color: #808080;
+  }
+
+  .details_images_container {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .details_image_wrapper {
+    position: relative;
+    width: fit-content;
+    display: grid;
+    align-items: center;
+  }
+
+  .image_arrow {
+    position: absolute;
+    background: white;
+    color: black;
+    border-radius: 50%;
+    width: 57px;
+    height: 57px;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    font-size: 20px;
+    margin: 0 2rem;
+    z-index: 3;
+  }
+
+  .image_arrow:hover {
+    cursor: pointer;
+    opacity: 0.9;
+  }
+
+  .image_arrow_left {
+    left: 0;
+  }
+
+  .image_arrow_right {
+    right: 0;
+  }
+
+  .details_image_thumbnails {
+    display: flex;
+    gap: 1rem;
+    width: fit-content;
+    justify-self: center;
+  }
+
+  .details_image_thumbnails:hover {
+    cursor: pointer;
+  }
+
+  .details_thumbnail_image {
+    position: relative;
+  }
+
+  .details_thumbnail_image[selected]:after {
+    background: #131f36;
+    content: '';
+    height: 4px;
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 73%;
+  }
+
+  /* Slider CSS */
+  .details_image_slider {
+    overflow: hidden;
+    width: 575px;
+    height: 882.217px;
+    position: relative;
+  }
+
+  .details_slider_track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    width: 100%;
+    height: 100%;
+  }
+
+  .details_slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
 {% schema %}
 {
   "name": "Looks Details",
