@@ -26,7 +26,12 @@
               if the reference id in the "model-data" object matches the id of the object in the theme editor, proceed
             {% endcomment %}
             {% if id_reference == id_model %}
-              {% assign image = look.image %}
+              {% assign image = null %}
+              {% for img in look.images.value %}
+                {% assign image = img %}
+                {% break %}
+              {% endfor %}
+
               {% assign title = look.image_title %}
               {% assign link_details_page = look.system.url %}
 
