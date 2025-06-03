@@ -1,0 +1,137 @@
+<div class="page-width model_overview_container">
+  {% for block in section.blocks %}
+    <div class="model_block">
+      {% assign model_ref = block.settings.model_ref %}
+
+      {% if model_ref != blank %}
+        {% assign headline = model_ref.model_headlines | metafield_tag %}
+        {% assign slogan = model_ref.model_slogan %}
+        {% assign id_model = model_ref.system.id %}
+
+        {% if headline -%}
+          <div class="model_head_wrapper">
+            <div class="model_headline">{{ headline }}</div>
+
+            {% if slogan %}
+              <div class="model_slogan">{{ slogan }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="model_images_wrapper">
+          {% for look in shop.metaobjects.model_data.values %}
+            {% assign id_reference = look.model_reference.value.system.id %}
+
+            {% comment %}
+              if the reference id in the "model-data" object matches the id of the object in the theme editor, proceed
+            {% endcomment %}
+            {% if id_reference == id_model %}
+              {% assign image = look.image %}
+              {% assign title = look.image_title %}
+              {% assign link_details_page = look.system.url %}
+
+              <div class="model_data_wrapper">
+                <a class="model_link_details_page" href="{{ link_details_page }}">
+                  <div class="model_image">{{ image | image_url: width: 380, height: 490 | image_tag }}</div>
+                  <div class="model_image_title">{{ title }}</div>
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+
+<style>
+  .model_overview_container {
+    display: grid;
+    gap: 7rem;
+    margin-bottom: 4rem;
+    margin-top: 4rem;
+  }
+
+  .model_block {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+  }
+
+  .model_head_wrapper {
+    margin-left: 2rem;
+  }
+
+  .model_head_wrapper h2,
+  .model_head_wrapper h1,
+  .model_head_wrapper h3,
+  .model_head_wrapper h4 {
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .model_head_wrapper p {
+    margin: 0;
+  }
+
+  .model_images_wrapper {
+    --display: flex;
+    --flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .model_data_wrapper {
+    position: relative;
+  }
+
+  .model_link_details_page {
+    text-decoration: none;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  .model_link_details_page:hover .model_image_title {
+    background: #131f36;
+    color: white;
+    font-weight: bold;
+  }
+
+  .model_image img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .model_image_title {
+    text-align: center;
+    padding: 1rem;
+    text-transform: uppercase;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Looks Overview",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "Model",
+      "name": "Model",
+      "settings": [
+        {
+          "type": "metaobject",
+          "metaobject_type": "model",
+          "id": "model_ref",
+          "label": "Model Reference"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Looks Overview"
+    }
+  ]
+}
+{% endschema %}
