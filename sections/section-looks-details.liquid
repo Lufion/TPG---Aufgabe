@@ -2,6 +2,11 @@
 {% assign description = metaobject.image_description | metafield_tag %}
 {% assign images = metaobject.images.value %}
 {% assign name_model = metaobject.model_reference.value.model_name %}
+{% assign image_count = 0 %}
+
+{% for image in images %}
+  {% assign image_count = image_count | plus: 1 %}
+{% endfor %}
 
 <div class="details_container page-width">
   <div class="details_content">
@@ -11,7 +16,9 @@
     <div class="details_images_container">
       <div class="details_image_wrapper">
         <div class="details_image_wrapper">
-          <div class="image_arrow_left image_arrow">❮</div>
+          {% if image_count > 1 %}
+            <div class="image_arrow_left image_arrow">❮</div>
+          {% endif %}
           <div class="details_image_slider">
             <div class="details_slider_track">
               {% for image in images %}
@@ -21,7 +28,9 @@
               {% endfor %}
             </div>
           </div>
-          <div class="image_arrow_right image_arrow">❯</div>
+          {% if image_count > 1 %}
+            <div class="image_arrow_right image_arrow">❯</div>
+          {% endif %}
         </div>
       </div>
 
@@ -41,6 +50,47 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const track = document.querySelector('.details_slider_track');
+    const slides = document.querySelectorAll('.details_slide');
+    const thumbnails = document.querySelectorAll('.details_thumbnail_image');
+    const leftArrow = document.querySelector('.image_arrow_left');
+    const rightArrow = document.querySelector('.image_arrow_right');
+
+    let currentIndex = 0;
+    const totalSlides = slides.length;
+
+    const updateCarousel = (index) => {
+      const offset = -index * 100;
+      track.style.transform = `translateX(${offset}%)`;
+
+      thumbnails.forEach((thumb, i) => {
+        thumb.toggleAttribute('selected', i === index);
+      });
+    };
+
+    leftArrow.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+      updateCarousel(currentIndex);
+    });
+
+    rightArrow.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % totalSlides;
+      updateCarousel(currentIndex);
+    });
+
+    thumbnails.forEach((thumb, index) => {
+      thumb.addEventListener('click', () => {
+        currentIndex = index;
+        updateCarousel(currentIndex);
+      });
+    });
+
+    updateCarousel(currentIndex); // initial position
+  });
+</script>
 
 <style>
   .details_container {
