@@ -2,7 +2,24 @@
 
 <div class="page-width model_overview_container">
   {% for block in section.blocks %}
+    {% comment %}
+      count the amount of looks found beforehand so we can determine whether we wanna hide the arrows or not
+    {% endcomment %}
+    {% assign count_looks = 0 %}
+    {% for look in shop.metaobjects.model_data.values %}
+      {% assign model_ref = block.settings.model_ref %}
+      {% assign id_reference = look.model_reference.value.system.id %}
+      {% assign id_model = model_ref.system.id %}
+
+      {% if id_reference == id_model %}
+        {% assign count_looks = count_looks | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
     <div class="model_block">
+      {% if count_looks > 1 %}
+        <div class="model_image_arrow_left model_image_arrow">❮</div>
+      {% endif %}
       {% assign model_ref = block.settings.model_ref %}
 
       {% if model_ref != blank %}
@@ -40,6 +57,7 @@
               <div class="model_data_wrapper">
                 <a class="model_link_details_page" href="{{ link_details_page }}">
                   <div class="model_image">{{ image | image_url: width: 380, height: 490 | image_tag }}</div>
+
                   <div class="model_image_title">{{ title }}</div>
                 </a>
               </div>
@@ -47,9 +65,32 @@
           {% endfor %}
         </div>
       {% endif %}
+      {% if count_looks > 1 %}
+        <div class="model_image_arrow_right model_image_arrow">❯</div>
+      {% endif %}
     </div>
   {% endfor %}
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.model_block').forEach((block) => {
+      const wrapper = block.querySelector('.model_images_wrapper');
+      const leftArrow = block.querySelector('.model_image_arrow_left');
+      const rightArrow = block.querySelector('.model_image_arrow_right');
+
+      const scrollAmount = wrapper.offsetWidth * 0.8; // Scroll by ~80% of visible width
+
+      leftArrow?.addEventListener('click', () => {
+        wrapper.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      });
+
+      rightArrow?.addEventListener('click', () => {
+        wrapper.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      });
+    });
+  });
+</script>
 
 {% schema %}
 {
