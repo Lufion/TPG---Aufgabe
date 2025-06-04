@@ -10,6 +10,15 @@
 {% assign price_total = 0 %}
 {% assign first_option_name = '' %}
 
+{% comment %}
+  Configurable Settings
+{% endcomment %}
+{% assign text_add_to_cart = 'In den Warenkorb' %}
+{% assign text_add_to_car_all = 'Alles in den Warenkorb' %}
+{% assign text_notification = 'Bitte wählen Sie eine Größe aus.' %}
+{% assign text_article_selected = 'Artikel gewählt' %}
+{% assign text_not_available = 'Nicht verfügbar' %}
+
 {% for image in images %}
   {% assign image_count = image_count | plus: 1 %}
 {% endfor %}
@@ -110,14 +119,26 @@
 
               <div class="details_product_variant_picker">
                 <select name="size" class="details_variant_select">
-                  <option value="Size">{{ first_option_name }}</option>
+                  <option value="">{{ first_option_name }}</option>
                   {% for variant in p_variants %}
-                    <option value="{{ variant }}">{{ variant.title }}</option>
+                    <option
+                      value="{{ variant.id }}"
+                      data-available="{{ variant.available }}"
+                      data-inventory="{{ variant.inventory_quantity }}"
+                    >
+                      {{ variant.title }}
+                    </option>
                   {% endfor %}
                 </select>
 
                 <div class="details_product_add_to_cart_bttn">
-                  <button class="details_add_bttn">In den Warenkorb</button>
+                  <div class="details_product_notification">{{ text_notification }}</div>
+                  <button
+                    class="details_add_bttn"
+                    data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+                  >
+                    {{ text_add_to_cart }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -128,15 +149,25 @@
 
       {% if product_count > 0 %}
         <div class="details_product_summary">
-          <div class="summary_text">{{ product_count }} Artikel gewählt</div>
+          <div class="summary_text">
+            {{ product_count }}
+            {{ text_article_selected }}
+          </div>
           <div class="summary_price">{{ price_total | money }}</div>
-          <button class="summary_add_to_cart_all details_add_bttn">Alles in den Warenkorb</button>
+          <button disabled class="summary_add_to_cart_all details_add_bttn">{{ text_add_to_car_all }}</button>
         </div>
       {% endif %}
     </div>
   </div>
 </div>
 
+<script>
+  const text_add_to_cart = {{ text_add_to_cart | json }}
+  const text_add_to_car_all = {{ text_add_to_car_all  | json }}
+  const text_notification = {{ text_notification  | json }}
+  const text_article_selected = {{ text_article_selected  | json }}
+  const text_not_available = {{ text_not_available  | json }}
+</script>
 <script src="{{ 'section-looks-details.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
