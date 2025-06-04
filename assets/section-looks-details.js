@@ -8,14 +8,18 @@ class LooksPage {
     this.elAddtoCart = document.querySelectorAll(".details_add_bttn");
     this.elAddToCartAll = document.querySelector(".summary_add_to_cart_all");
     this.elProductCards = document.querySelectorAll(".details_product_card");
+    this.elProductCheckboxes = document.querySelectorAll(".details_product_select_box");
+    this.elSummaryPrice = document.querySelector(".summary_price");
 
     this.textNotAvailable = text_not_available;
     this.textAdd = text_add_to_cart;
+    this.textArticleSelected = text_article_selected;
 
     this.#sliderFunction();
     this.#addToCartFunction();
     this.#addToCartAllFunction();
     this.#variantSelectFunction();
+    this.#productCheckboxEvent();
   }
 
   #sliderFunction() {
@@ -89,6 +93,40 @@ class LooksPage {
       .catch((err) => console.error("Fehler beim Aktualisieren vom Cart: ", err));
   }
 
+  #updatePrice() {
+    let total = 0;
+
+    this.elProductCards.forEach((card) => {
+      const checkbox = card.querySelector(".details_product_select_box");
+      if (!checkbox?.checked) return;
+
+      const select = card.querySelector(".details_variant_select");
+      const selectedOption = select?.options[select.selectedIndex];
+      const isAvailable = selectedOption?.dataset.available === "true";
+
+      if (!select || selectedOption.index === 0 || !selectedOption.value || isNaN(selectedOption.value) || !isAvailable) {
+        return;
+      }
+
+      // Get price from data attribute (assumes it's stored in cents)
+      const price = parseInt(selectedOption.dataset.price || "0");
+      total += price;
+    });
+
+    const formatted = (total / 100).toFixed(2).replace(".", ",") + " €"; // Format to euro with comma
+    this.elSummaryPrice.textContent = formatted;
+  }
+
+  #updateSelectedCountText() {
+    const checkedCount = this.elProductCheckboxes ? Array.from(this.elProductCheckboxes).filter((cb) => cb.checked).length : 0;
+    const summaryTextEl = document.querySelector(".summary_text");
+
+    if (summaryTextEl) {
+      const text = this.textArticleSelected;
+      summaryTextEl.textContent = `${checkedCount} ${text}`;
+    }
+  }
+
   async #checkInventoryLimit(selectedOption, elButton) {
     const res = await fetch("/cart.js");
     const cart = await res.json();
@@ -138,16 +176,18 @@ class LooksPage {
   }
 
   async #updateAddAllButton() {
-    const selects = document.querySelectorAll(".details_variant_select");
     let hasValidVariant = false;
-
     const cart = await fetch("/cart.js").then((res) => res.json());
 
-    selects.forEach((select) => {
-      const selectedOption = select.options[select.selectedIndex];
+    this.elProductCards.forEach((card) => {
+      const checkbox = card.querySelector(".details_product_select_box");
+      if (!checkbox?.checked) return;
+
+      const select = card.querySelector(".details_variant_select");
+      const selectedOption = select?.options[select.selectedIndex];
       const isAvailable = selectedOption?.dataset.available === "true";
 
-      if (selectedOption.index !== 0 && selectedOption.value && !isNaN(selectedOption.value) && isAvailable) {
+      if (selectedOption && selectedOption.index !== 0 && selectedOption.value && !isNaN(selectedOption.value) && isAvailable) {
         const selectedVariantId = parseInt(selectedOption.value);
         const variantInventory = parseInt(selectedOption.dataset.inventory || "0");
         const existingItem = cart.items.find((item) => item.id === selectedVariantId);
@@ -173,6 +213,7 @@ class LooksPage {
     document.querySelectorAll(".details_variant_select").forEach((select) => {
       select.addEventListener("change", () => {
         this.#updateButtonStates(select);
+        this.#updatePrice();
       });
 
       this.#updateButtonStates(select); // run on init
@@ -183,76 +224,55 @@ class LooksPage {
   #addToCartAllFunction() {
     if (this.elAddToCartAll) {
       this.elAddToCartAll.addEventListener("click", () => {
-        fetch("/cart.js")
-          .then((res) => res.json())
-          .then((cart) => {
-            const itemsToAdd = [];
-            let hadInvalidSelection = false;
+        const itemsToAdd = [];
+        let hadInvalidSelection = false;
 
+        this.elProductCards.forEach((card) => {
+          const checkbox = card.querySelector(".details_product_select_box");
+          if (!checkbox?.checked) return; // Skip unchecked products
+
+          const select = card.querySelector(".details_variant_select");
+          const notification = card.querySelector(".details_product_notification");
+          const selectedOption = select?.options[select.selectedIndex];
+          const isAvailable = selectedOption?.dataset.available === "true";
+
+          notification?.classList.remove("show");
+
+          if (!select || selectedOption.index === 0 || !selectedOption.value || isNaN(selectedOption.value)) {
+            notification?.classList.add("show");
+            hadInvalidSelection = true;
+            return;
+          }
+
+          if (!isAvailable) return;
+
+          itemsToAdd.push({ id: selectedOption.value, quantity: 1 });
+        });
+
+        if (hadInvalidSelection || itemsToAdd.length === 0) return;
+
+        fetch("/cart/add.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: itemsToAdd }),
+        })
+          .then((response) => (response.ok ? response.json() : Promise.reject()))
+          .then(() => {
+            this.#updateCartCountBubble();
+
+            // Re-check inventory limits for the selected items
             this.elProductCards.forEach((card) => {
-              const select = card.querySelector(".details_variant_select");
-              const notification = card.querySelector(".details_product_notification");
+              const checkbox = card.querySelector(".details_product_select_box");
+              if (!checkbox?.checked) return;
+
               const button = card.querySelector(".details_add_bttn");
+              const select = card.querySelector(".details_variant_select");
               const selectedOption = select?.options[select.selectedIndex];
-
-              notification?.classList.remove("show");
-
-              // Skip invalid selection
-              if (!select || selectedOption.index === 0 || !selectedOption.value || isNaN(selectedOption.value)) {
-                notification?.classList.add("show");
-                hadInvalidSelection = true;
-                return;
-              }
-
-              const isAvailable = selectedOption.dataset.available === "true";
-              const inventory = parseInt(selectedOption.dataset.inventory || "0");
-              const variantId = parseInt(selectedOption.value);
-              const cartItem = cart.items.find((item) => item.id === variantId);
-              const quantityInCart = cartItem ? cartItem.quantity : 0;
-
-              if (!isAvailable || quantityInCart >= inventory) {
-                // Skip item and disable button
-                button.disabled = true;
-                button.innerText = this.textNotAvailable;
-                return;
-              }
-
-              // All good, add to cart
-              itemsToAdd.push({ id: variantId, quantity: 1 });
+              this.#checkInventoryLimit(selectedOption, button);
             });
-
-            if (hadInvalidSelection || itemsToAdd.length === 0) return;
-
-            // Now add valid items to the cart
-            fetch("/cart/add.js", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ items: itemsToAdd }),
-            })
-              .then((response) => (response.ok ? response.json() : Promise.reject()))
-              .then(() => {
-                this.#updateCartCountBubble();
-
-                this.elProductCards.forEach((card) => {
-                  if (!card) return;
-
-                  const button = card.querySelector(".details_add_bttn");
-                  const select = card.querySelector(".details_variant_select");
-
-                  if (!select || !button) return;
-
-                  const selectedOption = select.options[select.selectedIndex];
-                  if (!selectedOption) return;
-
-                  this.#checkInventoryLimit(selectedOption, button);
-                });
-              })
-              .catch((err) => {
-                console.error("Error multi add to cart:", err);
-              });
           })
           .catch((err) => {
-            console.error("Fehler beim Abrufen des Warenkorbs:", err);
+            console.error("Error multi add to cart:", err);
           });
       });
     }
@@ -287,6 +307,17 @@ class LooksPage {
           .catch((err) => {
             console.error("Fehler beim Hinzufügen:", err);
           });
+      });
+    });
+  }
+
+  //When a checkbox is ticked, update the summary price accordinglgy
+  #productCheckboxEvent() {
+    this.elProductCheckboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", () => {
+        this.#updatePrice();
+        this.#updateAddAllButton();
+        this.#updateSelectedCountText();
       });
     });
   }

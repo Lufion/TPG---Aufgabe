@@ -89,8 +89,10 @@
         {% assign p_vendor = product.vendor %}
         {% assign p_vendor = product.vendor %}
         {% assign p_link = product.url %}
-        {% assign p_price = product.selected_or_first_available_variant.price | money %}
-        {% assign p_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money %}
+        {% assign p_price = product.selected_or_first_available_variant.price | money_without_currency %}
+        {% assign p_compare_at_price = product.selected_or_first_available_variant.compare_at_price
+          | money_without_currency
+        %}
         {% assign p_variants = product.variants %}
 
         <div class="details_product_card">
@@ -98,6 +100,7 @@
             <div class="details_product_image_wrap">
               <a class="details_product_overlay_link" href="{{ p_link }}"></a>
               <div class="details_product_image">{{ p_image | image_url: height: 200 | image_tag }}</div>
+              <input checked type="checkbox" class="details_product_select_box">
             </div>
 
             <div class="details_product_info_wrap">
@@ -113,8 +116,8 @@
               {% endif %}
 
               <div class="details_product_prices">
-                <div class="product_price">{{ p_price }}</div>
-                <div class="product_compare_at_price">{{ p_compare_at_price }}</div>
+                <div class="product_price">{{ p_price }} €</div>
+                <div class="product_compare_at_price">{{ p_compare_at_price }} €</div>
               </div>
 
               <div class="details_product_variant_picker">
@@ -125,6 +128,7 @@
                       value="{{ variant.id }}"
                       data-available="{{ variant.available }}"
                       data-inventory="{{ variant.inventory_quantity }}"
+                      data-price="{{ variant.price }}"
                     >
                       {{ variant.title }}
                     </option>
@@ -153,7 +157,7 @@
             {{ product_count }}
             {{ text_article_selected }}
           </div>
-          <div class="summary_price">{{ price_total | money }}</div>
+          <div class="summary_price">0.00€</div>
           <button disabled class="summary_add_to_cart_all details_add_bttn">{{ text_add_to_car_all }}</button>
         </div>
       {% endif %}

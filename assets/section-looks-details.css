@@ -183,6 +183,19 @@
   height: auto;
 }
 
+.details_product_select_box {
+  position: absolute;
+  top: 2rem;
+  left: 0;
+  width: 11px !important;
+  height: 11px;
+  margin: 0;
+  padding: 0;
+  -webkit-box-shadow: 0px 0px 0px 1px rgb(0, 0, 0);
+  -moz-box-shadow: 0px 0px 0px 1px rgba(0, 0, 0);
+  box-shadow: 0px 0px 0px 1px rgba(0, 0, 0);
+}
+
 /* CSS Looks Images (left grid panel) */
 
 .details_container {
