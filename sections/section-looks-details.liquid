@@ -3,6 +3,7 @@
 {% assign images = metaobject.images.value %}
 {% assign name_model = metaobject.model_reference.value.model_name %}
 {% assign image_count = 0 %}
+{% assign list_products = metaobject.product_reference.value %}
 
 {% for image in images %}
   {% assign image_count = image_count | plus: 1 %}
@@ -10,8 +11,12 @@
 
 <div class="details_container page-width">
   <div class="details_content">
-    <h1 class="details_title">{{ title }} Look von {{ name_model }}</h1>
-    <div class="details_description">{{ description }}</div>
+    {% if title != null %}
+      <h1 class="details_title">{{ title }} Look von {{ name_model }}</h1>
+    {% endif %}
+    {% if description != null %}
+      <div class="details_description">{{ description }}</div>
+    {% endif %}
 
     <div class="details_images_container">
       <div class="details_image_wrapper">
@@ -92,6 +97,14 @@
   });
 </script>
 
+{% comment %}
+  CSS Product List (right grid panel)
+{% endcomment %}
+<style></style>
+
+{% comment %}
+  CSS Looks Images (left grid panel)
+{% endcomment %}
 <style>
   .details_container {
     display: grid;
@@ -104,7 +117,8 @@
     display: grid;
   }
 
-  .details_title {
+  .details_title,
+  .details_description .metafield-rich_text_field h2 {
     font-weight: 700;
     font-size: 2.725rem;
     line-height: 1.75rem;
