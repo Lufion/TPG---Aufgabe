@@ -1,222 +1,143 @@
+{{ 'section-looks-details.css' | asset_url | stylesheet_tag }}
+
 {% assign title = metaobject.image_title %}
 {% assign description = metaobject.image_description | metafield_tag %}
 {% assign images = metaobject.images.value %}
 {% assign name_model = metaobject.model_reference.value.model_name %}
 {% assign image_count = 0 %}
 {% assign list_products = metaobject.product_reference.value %}
+{% assign product_count = 0 %}
+{% assign price_total = 0 %}
+{% assign first_option_name = '' %}
 
 {% for image in images %}
   {% assign image_count = image_count | plus: 1 %}
 {% endfor %}
 
+{% for product in list_products %}
+  {% assign product_count = product_count | plus: 1 %}
+  {% assign price_total = price_total | plus: product.selected_or_first_available_variant.price %}
+
+  {% for option in product.options_with_values %}
+    {% assign first_option_name = option.name %}
+    {% break %}
+  {% endfor %}
+{% endfor %}
+
 <div class="details_container page-width">
-  <div class="details_content">
+  <div class="details_header_wrap">
     {% if title != null %}
       <h1 class="details_title">{{ title }} Look von {{ name_model }}</h1>
     {% endif %}
     {% if description != null %}
       <div class="details_description">{{ description }}</div>
     {% endif %}
+  </div>
 
-    <div class="details_images_container">
-      <div class="details_image_wrapper">
+  <div class="details_grid_wrap">
+    <div class="details_content">
+      <div class="details_images_container">
         <div class="details_image_wrapper">
-          {% if image_count > 1 %}
-            <div class="image_arrow_left image_arrow">❮</div>
-          {% endif %}
-          <div class="details_image_slider">
-            <div class="details_slider_track">
-              {% for image in images %}
-                <div class="details_slide">
-                  {{ image | image_url: width: 575, height: 882.217 | image_tag }}
-                </div>
-              {% endfor %}
+          <div class="details_image_wrapper">
+            {% if image_count > 1 %}
+              <div class="image_arrow_left image_arrow">❮</div>
+            {% endif %}
+            <div class="details_image_slider">
+              <div class="details_slider_track">
+                {% for image in images %}
+                  <div class="details_slide">
+                    {{ image | image_url: width: 575, height: 766 | image_tag }}
+                  </div>
+                {% endfor %}
+              </div>
             </div>
+            {% if image_count > 1 %}
+              <div class="image_arrow_right image_arrow">❯</div>
+            {% endif %}
           </div>
-          {% if image_count > 1 %}
-            <div class="image_arrow_right image_arrow">❯</div>
-          {% endif %}
+        </div>
+
+        <div class="details_image_thumbnails">
+          {% for image in images %}
+            <div
+              class="details_thumbnail_image"
+              data-index="{{ forloop.index0 }}"
+              {% if forloop.first %}
+                selected
+              {% endif %}
+            >
+              {{ image | image_url: width: 120, height: 184.117 | image_tag }}
+            </div>
+          {% endfor %}
         </div>
       </div>
+    </div>
 
-      <div class="details_image_thumbnails">
-        {% for image in images %}
-          <div
-            class="details_thumbnail_image"
-            data-index="{{ forloop.index0 }}"
-            {% if forloop.first %}
-              selected
-            {% endif %}
-          >
-            {{ image | image_url: width: 120, height: 184.117 | image_tag }}
+    <div class="details_products_content">
+      {% for product in list_products %}
+        {% assign p_title = product.title %}
+        {% assign p_image = product.featured_image.src %}
+        {% assign p_vendor = product.vendor %}
+        {% assign p_vendor = product.vendor %}
+        {% assign p_link = product.url %}
+        {% assign p_price = product.selected_or_first_available_variant.price | money %}
+        {% assign p_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money %}
+        {% assign p_variants = product.variants %}
+
+        <div class="details_product_card">
+          <div class="details_product_data_wrap">
+            <div class="details_product_image_wrap">
+              <a class="details_product_overlay_link" href="{{ p_link }}"></a>
+              <div class="details_product_image">{{ p_image | image_url: height: 200 | image_tag }}</div>
+            </div>
+
+            <div class="details_product_info_wrap">
+              <div class="details_product_title_wrap">
+                <a class="details_product_overlay_link" href="{{ p_link }}"></a>
+                <div class="details_product_title">{{ p_title }}</div>
+              </div>
+
+              {% if p_vendor %}
+                <div class="details_product_vendor">
+                  {{ p_vendor }}
+                </div>
+              {% endif %}
+
+              <div class="details_product_prices">
+                <div class="product_price">{{ p_price }}</div>
+                <div class="product_compare_at_price">{{ p_compare_at_price }}</div>
+              </div>
+
+              <div class="details_product_variant_picker">
+                <select name="size" class="details_variant_select">
+                  <option value="Size">{{ first_option_name }}</option>
+                  {% for variant in p_variants %}
+                    <option value="{{ variant }}">{{ variant.title }}</option>
+                  {% endfor %}
+                </select>
+
+                <div class="details_product_add_to_cart_bttn">
+                  <button class="details_add_bttn">In den Warenkorb</button>
+                </div>
+              </div>
+            </div>
           </div>
-        {% endfor %}
-      </div>
+          <hr class="details_product_seperator {% if forloop.last %}seperator_last{% endif %}">
+        </div>
+      {% endfor %}
+
+      {% if product_count > 0 %}
+        <div class="details_product_summary">
+          <div class="summary_text">{{ product_count }} Artikel gewählt</div>
+          <div class="summary_price">{{ price_total | money }}</div>
+          <button class="summary_add_to_cart_all details_add_bttn">Alles in den Warenkorb</button>
+        </div>
+      {% endif %}
     </div>
   </div>
 </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const track = document.querySelector('.details_slider_track');
-    const slides = document.querySelectorAll('.details_slide');
-    const thumbnails = document.querySelectorAll('.details_thumbnail_image');
-    const leftArrow = document.querySelector('.image_arrow_left');
-    const rightArrow = document.querySelector('.image_arrow_right');
-
-    let currentIndex = 0;
-    const totalSlides = slides.length;
-
-    const updateCarousel = (index) => {
-      const offset = -index * 100;
-      track.style.transform = `translateX(${offset}%)`;
-
-      thumbnails.forEach((thumb, i) => {
-        thumb.toggleAttribute('selected', i === index);
-      });
-    };
-
-    leftArrow.addEventListener('click', () => {
-      currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-      updateCarousel(currentIndex);
-    });
-
-    rightArrow.addEventListener('click', () => {
-      currentIndex = (currentIndex + 1) % totalSlides;
-      updateCarousel(currentIndex);
-    });
-
-    thumbnails.forEach((thumb, index) => {
-      thumb.addEventListener('click', () => {
-        currentIndex = index;
-        updateCarousel(currentIndex);
-      });
-    });
-
-    updateCarousel(currentIndex); // initial position
-  });
-</script>
-
-{% comment %}
-  CSS Product List (right grid panel)
-{% endcomment %}
-<style></style>
-
-{% comment %}
-  CSS Looks Images (left grid panel)
-{% endcomment %}
-<style>
-  .details_container {
-    display: grid;
-    gap: 2rem;
-    grid-template-columns: 1fr 1fr;
-    margin-bottom: 4rem;
-  }
-
-  .details_content {
-    display: grid;
-  }
-
-  .details_title,
-  .details_description .metafield-rich_text_field h2 {
-    font-weight: 700;
-    font-size: 2.725rem;
-    line-height: 1.75rem;
-    margin: 2.125rem 0rem 1.25rem 0rem;
-  }
-
-  .details_description {
-    font-size: small;
-    color: #808080;
-  }
-
-  .details_images_container {
-    display: grid;
-    gap: 2rem;
-  }
-
-  .details_image_wrapper {
-    position: relative;
-    width: fit-content;
-    display: grid;
-    align-items: center;
-  }
-
-  .image_arrow {
-    position: absolute;
-    background: white;
-    color: black;
-    border-radius: 50%;
-    width: 57px;
-    height: 57px;
-    display: grid;
-    align-content: center;
-    justify-content: center;
-    font-size: 20px;
-    margin: 0 2rem;
-    z-index: 3;
-  }
-
-  .image_arrow:hover {
-    cursor: pointer;
-    opacity: 0.9;
-  }
-
-  .image_arrow_left {
-    left: 0;
-  }
-
-  .image_arrow_right {
-    right: 0;
-  }
-
-  .details_image_thumbnails {
-    display: flex;
-    gap: 1rem;
-    width: fit-content;
-    justify-self: center;
-  }
-
-  .details_image_thumbnails:hover {
-    cursor: pointer;
-  }
-
-  .details_thumbnail_image {
-    position: relative;
-  }
-
-  .details_thumbnail_image[selected]:after {
-    background: #131f36;
-    content: '';
-    height: 4px;
-    position: absolute;
-    bottom: 2px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 73%;
-  }
-
-  /* Slider CSS */
-  .details_image_slider {
-    overflow: hidden;
-    width: 575px;
-    height: 882.217px;
-    position: relative;
-  }
-
-  .details_slider_track {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-    width: 100%;
-    height: 100%;
-  }
-
-  .details_slide {
-    flex: 0 0 100%;
-    width: 100%;
-    height: 100%;
-  }
-</style>
+<script src="{{ 'section-looks-details.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {

@@ -1,3 +1,5 @@
+{{ 'section-looks-overview.css' | asset_url | stylesheet_tag }}
+
 <div class="page-width model_overview_container">
   {% for block in section.blocks %}
     <div class="model_block">
@@ -48,72 +50,6 @@
     </div>
   {% endfor %}
 </div>
-
-<style>
-  .model_overview_container {
-    display: grid;
-    gap: 7rem;
-    margin-bottom: 4rem;
-    margin-top: 4rem;
-  }
-
-  .model_block {
-    display: flex;
-    flex-direction: column;
-    gap: 4rem;
-  }
-
-  .model_head_wrapper {
-    margin-left: 2rem;
-  }
-
-  .model_head_wrapper h2,
-  .model_head_wrapper h1,
-  .model_head_wrapper h3,
-  .model_head_wrapper h4 {
-    font-weight: bold;
-    margin: 0;
-  }
-
-  .model_head_wrapper p {
-    margin: 0;
-  }
-
-  .model_images_wrapper {
-    --display: flex;
-    --flex-direction: row;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
-  }
-
-  .model_data_wrapper {
-    position: relative;
-  }
-
-  .model_link_details_page {
-    text-decoration: none;
-    color: rgba(var(--color-foreground), 0.75);
-  }
-
-  .model_link_details_page:hover .model_image_title {
-    background: #131f36;
-    color: white;
-    font-weight: bold;
-  }
-
-  .model_image img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-
-  .model_image_title {
-    text-align: center;
-    padding: 1rem;
-    text-transform: uppercase;
-  }
-</style>
 
 {% schema %}
 {
