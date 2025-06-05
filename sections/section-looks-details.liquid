@@ -35,7 +35,7 @@
 
 <div class="details_container page-width">
   <div class="details_header_wrap">
-    {% if title != empty %}
+    {% if title != empty and title != null %}
       <h1 class="details_title">{{ title }} Look von {{ name_model }}</h1>
     {% endif %}
     {% if description != empty %}

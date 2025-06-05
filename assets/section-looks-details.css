@@ -87,7 +87,7 @@
   cursor: not-allowed;
 }
 
-.details_product_card:hover,
+.details_product_title_wrap,
 .details_add_bttn:hover,
 .details_product_variant_picker select:hover {
   cursor: pointer;
@@ -280,7 +280,7 @@
   justify-self: center;
 }
 
-.details_image_thumbnails:hover {
+.details_thumbnail_image:hover {
   cursor: pointer;
 }
 
@@ -324,7 +324,7 @@
 }
 
 /* Mobile CSS */
-@media screen and (max-width: 749px) {
+@media screen and (max-width: 1086px) {
   .details_grid_wrap {
     display: flex;
     flex-direction: column;
@@ -342,7 +342,7 @@
   }
 
   .details_image_wrapper {
-    position: static;
+    position: relative;
   }
 
   .details_image_thumbnails {
@@ -352,6 +352,7 @@
     scroll-behavior: smooth;
     gap: 1rem;
     scroll-snap-type: x mandatory;
+    justify-content: center;
     -webkit-overflow-scrolling: touch;
   }
 

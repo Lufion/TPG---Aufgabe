@@ -2,66 +2,49 @@
 
 <div class="page-width model_overview_container">
   {% for block in section.blocks %}
+    {% assign model_ref = block.settings.model_ref %}
+    {% assign list_looks = model_ref.model_looks_list.value %}
+
     {% comment %}
       count the amount of looks found beforehand so we can determine whether we wanna hide the arrows or not
     {% endcomment %}
     {% assign count_looks = 0 %}
-    {% for look in shop.metaobjects.model_data.values %}
-      {% assign model_ref = block.settings.model_ref %}
-      {% assign id_reference = look.model_reference.value.system.id %}
-      {% assign id_model = model_ref.system.id %}
-
-      {% if id_reference == id_model %}
-        {% assign count_looks = count_looks | plus: 1 %}
-      {% endif %}
+    {% for look in list_looks %}
+      {% assign count_looks = count_looks | plus: 1 %}
     {% endfor %}
 
     <div class="model_block">
       {% if count_looks > 1 %}
         <div class="model_image_arrow_left model_image_arrow">❮</div>
       {% endif %}
-      {% assign model_ref = block.settings.model_ref %}
 
       {% if model_ref != blank %}
         {% assign headline = model_ref.model_headlines | metafield_tag %}
-        {% assign slogan = model_ref.model_slogan %}
-        {% assign id_model = model_ref.system.id %}
 
         {% if headline -%}
           <div class="model_head_wrapper">
             <div class="model_headline">{{ headline }}</div>
-
-            {% if slogan %}
-              <div class="model_slogan">{{ slogan }}</div>
-            {% endif %}
           </div>
         {% endif %}
 
         <div class="model_images_wrapper">
-          {% for look in shop.metaobjects.model_data.values %}
-            {% assign id_reference = look.model_reference.value.system.id %}
+          {% for look in list_looks %}
+            {% assign image = null %}
+            {% for img in look.images.value %}
+              {% assign image = img %}
+              {% break %}
+            {% endfor %}
 
-            {% comment %}
-              if the reference id in the "model-data" object matches the id of the object in the theme editor, proceed
-            {% endcomment %}
-            {% if id_reference == id_model %}
-              {% assign image = null %}
-              {% for img in look.images.value %}
-                {% assign image = img %}
-                {% break %}
-              {% endfor %}
+            {% assign title = look.image_title %}
+            {% assign link_details_page = look.system.url %}
 
-              {% assign title = look.image_title %}
-              {% assign link_details_page = look.system.url %}
+            <div class="model_data_wrapper">
+              <a class="model_link_details_page" href="{{ link_details_page }}">
+                <div class="model_image">{{ image | image_url: width: 380, height: 490 | image_tag }}</div>
 
-              <div class="model_data_wrapper">
-                <a class="model_link_details_page" href="{{ link_details_page }}">
-                  <div class="model_image">{{ image | image_url: width: 380, height: 490 | image_tag }}</div>
-
-                  <div class="model_image_title">{{ title }}</div>
-                </a>
-              </div>
-            {% endif %}
+                <div class="model_image_title">{{ title }}</div>
+              </a>
+            </div>
           {% endfor %}
         </div>
       {% endif %}
