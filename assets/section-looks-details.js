@@ -24,36 +24,66 @@ class LooksPage {
 
   #sliderFunction() {
     document.addEventListener("DOMContentLoaded", () => {
+      const track = document.querySelector(".details_slider_track");
+      const slides = document.querySelectorAll(".details_slide");
+      const leftArrow = document.querySelector(".image_arrow_left");
+      const rightArrow = document.querySelector(".image_arrow_right");
+      const thumbnails = document.querySelectorAll(".details_thumbnail_image");
+
       let currentIndex = 0;
-      const totalSlides = this.elSlides.length;
+      const isMobile = window.innerWidth < 750;
 
-      const updateCarousel = (index) => {
-        const offset = -index * 100;
-        this.elTrack.style.transform = `translateX(${offset}%)`;
+      const slideWidth = () => slides[0].clientWidth;
 
-        this.elThumbnails.forEach((thumb, i) => {
-          thumb.toggleAttribute("selected", i === index);
-        });
+      const scrollToIndex = (index) => {
+        currentIndex = index;
+        if (isMobile) {
+          track.scrollTo({
+            left: index * slideWidth(),
+            behavior: "smooth",
+          });
+        } else {
+          const offset = -index * slideWidth();
+          track.style.transform = `translateX(${offset}px)`;
+        }
+
+        thumbnails.forEach((thumb, i) => thumb.toggleAttribute("selected", i === index));
       };
 
-      this.elArrowLeft.addEventListener("click", () => {
-        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-        updateCarousel(currentIndex);
+      leftArrow?.addEventListener("click", () => {
+        if (currentIndex > 0) {
+          scrollToIndex(currentIndex - 1);
+        }
       });
 
-      this.elArrowRight.addEventListener("click", () => {
-        currentIndex = (currentIndex + 1) % totalSlides;
-        updateCarousel(currentIndex);
+      rightArrow?.addEventListener("click", () => {
+        if (currentIndex < slides.length - 1) {
+          scrollToIndex(currentIndex + 1);
+        }
       });
 
-      this.elThumbnails.forEach((thumb, index) => {
-        thumb.addEventListener("click", () => {
-          currentIndex = index;
-          updateCarousel(currentIndex);
+      thumbnails.forEach((thumb, index) => {
+        thumb.addEventListener("click", () => scrollToIndex(index));
+      });
+
+      // Optional: sync scroll position for mobile swiping
+      if (isMobile) {
+        track.addEventListener("scroll", () => {
+          const index = Math.round(track.scrollLeft / slideWidth());
+          if (index !== currentIndex) {
+            currentIndex = index;
+            thumbnails.forEach((thumb, i) => thumb.toggleAttribute("selected", i === index));
+          }
         });
-      });
+      }
 
-      updateCarousel(currentIndex); // initial position
+      // Desktop transform requires this
+      if (!isMobile) {
+        track.style.display = "flex";
+        track.style.transition = "transform 0.3s ease-in-out";
+      }
+
+      scrollToIndex(0); // Set initial position
     });
   }
 

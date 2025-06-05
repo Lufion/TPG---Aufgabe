@@ -35,10 +35,10 @@
 
 <div class="details_container page-width">
   <div class="details_header_wrap">
-    {% if title != null %}
+    {% if title != empty %}
       <h1 class="details_title">{{ title }} Look von {{ name_model }}</h1>
     {% endif %}
-    {% if description != null %}
+    {% if description != empty %}
       <div class="details_description">{{ description }}</div>
     {% endif %}
   </div>
@@ -47,23 +47,21 @@
     <div class="details_content">
       <div class="details_images_container">
         <div class="details_image_wrapper">
-          <div class="details_image_wrapper">
-            {% if image_count > 1 %}
-              <div class="image_arrow_left image_arrow">❮</div>
-            {% endif %}
-            <div class="details_image_slider">
-              <div class="details_slider_track">
-                {% for image in images %}
-                  <div class="details_slide">
-                    {{ image | image_url: width: 575, height: 766 | image_tag }}
-                  </div>
-                {% endfor %}
-              </div>
+          {% if image_count > 1 %}
+            <div class="image_arrow_left image_arrow">❮</div>
+          {% endif %}
+          <div class="details_image_slider">
+            <div class="details_slider_track">
+              {% for image in images %}
+                <div class="details_slide">
+                  {{ image | image_url: width: 575, height: 766 | image_tag }}
+                </div>
+              {% endfor %}
             </div>
-            {% if image_count > 1 %}
-              <div class="image_arrow_right image_arrow">❯</div>
-            {% endif %}
           </div>
+          {% if image_count > 1 %}
+            <div class="image_arrow_right image_arrow">❯</div>
+          {% endif %}
         </div>
 
         <div class="details_image_thumbnails">
@@ -98,7 +96,7 @@
         <div class="details_product_card">
           <div class="details_product_data_wrap">
             <div class="details_product_image_wrap">
-              <a class="details_product_overlay_link" href="{{ p_link }}"></a>
+              {% comment %}  <a class="details_product_overlay_link" href="{{ p_link }}"></a> {% endcomment %}
               <div class="details_product_image">{{ p_image | image_url: height: 200 | image_tag }}</div>
               <input checked type="checkbox" class="details_product_select_box">
             </div>
@@ -134,19 +132,20 @@
                     </option>
                   {% endfor %}
                 </select>
-
-                <div class="details_product_add_to_cart_bttn">
-                  <div class="details_product_notification">{{ text_notification }}</div>
-                  <button
-                    class="details_add_bttn"
-                    data-variant-id="{{ product.selected_or_first_available_variant.id }}"
-                  >
-                    {{ text_add_to_cart }}
-                  </button>
-                </div>
               </div>
             </div>
+
+            <div class="details_product_add_to_cart_bttn">
+              <div class="details_product_notification">{{ text_notification }}</div>
+              <button
+                class="details_add_bttn"
+                data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+              >
+                {{ text_add_to_cart }}
+              </button>
+            </div>
           </div>
+
           <hr class="details_product_seperator {% if forloop.last %}seperator_last{% endif %}">
         </div>
       {% endfor %}
