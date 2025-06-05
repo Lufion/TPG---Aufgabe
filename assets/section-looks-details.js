@@ -23,67 +23,88 @@ class LooksPage {
   }
 
   #sliderFunction() {
-    document.addEventListener("DOMContentLoaded", () => {
-      const track = document.querySelector(".details_slider_track");
-      const slides = document.querySelectorAll(".details_slide");
-      const leftArrow = document.querySelector(".image_arrow_left");
-      const rightArrow = document.querySelector(".image_arrow_right");
-      const thumbnails = document.querySelectorAll(".details_thumbnail_image");
+    let currentIndex = 0;
+    let isMobile = window.innerWidth < 750;
 
-      let currentIndex = 0;
-      const isMobile = window.innerWidth < 750;
+    const getSlideWidth = () => this.elSlides[0]?.clientWidth || 0;
 
-      const slideWidth = () => slides[0].clientWidth;
+    const scrollToIndex = (index) => {
+      currentIndex = index;
+      if (isMobile) {
+        this.elTrack.scrollTo({
+          left: index * getSlideWidth(),
+          behavior: "smooth",
+        });
+      } else {
+        const offset = -index * getSlideWidth();
+        this.elTrack.style.transform = `translateX(${offset}px)`;
+      }
 
-      const scrollToIndex = (index) => {
+      this.elThumbnails.forEach((thumb, i) => {
+        thumb.toggleAttribute("selected", i === index);
+      });
+    };
+
+    const onPrev = () => {
+      if (currentIndex > 0) scrollToIndex(currentIndex - 1);
+    };
+
+    const onNext = () => {
+      if (currentIndex < this.elSlides.length - 1) scrollToIndex(currentIndex + 1);
+    };
+
+    const onScroll = () => {
+      const index = Math.round(this.elTrack.scrollLeft / getSlideWidth());
+      if (index !== currentIndex) {
         currentIndex = index;
-        if (isMobile) {
-          track.scrollTo({
-            left: index * slideWidth(),
-            behavior: "smooth",
-          });
-        } else {
-          const offset = -index * slideWidth();
-          track.style.transform = `translateX(${offset}px)`;
-        }
+        this.elThumbnails.forEach((thumb, i) => {
+          thumb.toggleAttribute("selected", i === index);
+        });
+      }
+    };
 
-        thumbnails.forEach((thumb, i) => thumb.toggleAttribute("selected", i === index));
-      };
+    const initSlider = () => {
+      // Reselect DOM elements in case they changed
+      this.elSlides = document.querySelectorAll(".details_slide");
+      this.elThumbnails = document.querySelectorAll(".details_thumbnail_image");
+      this.elTrack = document.querySelector(".details_slider_track");
 
-      leftArrow?.addEventListener("click", () => {
-        if (currentIndex > 0) {
-          scrollToIndex(currentIndex - 1);
-        }
-      });
+      isMobile = window.innerWidth < 750;
 
-      rightArrow?.addEventListener("click", () => {
-        if (currentIndex < slides.length - 1) {
-          scrollToIndex(currentIndex + 1);
-        }
-      });
+      this.elArrowLeft?.addEventListener("click", onPrev);
+      this.elArrowRight?.addEventListener("click", onNext);
 
-      thumbnails.forEach((thumb, index) => {
+      this.elThumbnails.forEach((thumb, index) => {
         thumb.addEventListener("click", () => scrollToIndex(index));
       });
 
-      // Optional: sync scroll position for mobile swiping
       if (isMobile) {
-        track.addEventListener("scroll", () => {
-          const index = Math.round(track.scrollLeft / slideWidth());
-          if (index !== currentIndex) {
-            currentIndex = index;
-            thumbnails.forEach((thumb, i) => thumb.toggleAttribute("selected", i === index));
-          }
-        });
+        this.elTrack.addEventListener("scroll", onScroll);
+        this.elTrack.style.transform = "none";
+      } else {
+        this.elTrack.style.display = "flex";
+        this.elTrack.style.transition = "transform 0.3s ease-in-out";
       }
 
-      // Desktop transform requires this
-      if (!isMobile) {
-        track.style.display = "flex";
-        track.style.transition = "transform 0.3s ease-in-out";
-      }
+      scrollToIndex(0);
+    };
 
-      scrollToIndex(0); // Set initial position
+    const destroySlider = () => {
+      this.elArrowLeft?.removeEventListener("click", onPrev);
+      this.elArrowRight?.removeEventListener("click", onNext);
+      this.elTrack?.removeEventListener("scroll", onScroll);
+
+      this.elThumbnails.forEach((thumb) => {
+        // Remove all click handlers by replacing with clones
+        thumb.replaceWith(thumb.cloneNode(true));
+      });
+    };
+
+    initSlider();
+
+    window.addEventListener("resize", () => {
+      destroySlider();
+      initSlider();
     });
   }
 
